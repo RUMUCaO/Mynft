@@ -1,0 +1,78 @@
+// SPDX-License-Identifier: MIT
+pragma solidity ^0.8.0;
+import "nft constract.sol";
+
+//NFT construct是经典的ERC-721智能合约
+
+//storage:
+//每个地址有class数组n个；
+//tokenId，代币的Id会有owners、class、transferable、burnable四个数组，各司其职
+//发行和铸造的人不同，运营商发行，但是用户铸造
+
+
+//根据地址及其发行的系列信息，写入一个class数组，固定在账户地址
+function classidofaddress(address class,classid,transferable,burnable,mintnumber){
+class[4]=[classid,transferable,burnable,mintnumber];
+classaddress[classid]=address class;
+}
+
+//根据tokenId的发行，模拟ERC-721的owners[tokenId],创建_class[tokenId]、_transferable[tokenId]&_burnable[tokenId]；
+function issueofclass（address issue,uint256 tokenId）{
+    require(class.mintnumber==0,"the class cannot be minted anymore");
+    _class[tokenId]=class.classid;
+    _transferable[tokenId]=class.transferable;
+    _burnable[tokenId]=class.burnable;
+    class.mintnumber--;
+    }
+  
+  //根据NFT constract改，如果_transferable[tokenId]不为true，则报错
+function _transfer(
+        address from,
+        address to,
+        uint256 tokenId
+    ) internal virtual {
+        require(ERC721.ownerOf(tokenId) == from, "ERC721: transfer of token that is not own");
+        require(to != address(0), "ERC721: transfer to the zero address");
+        require(_transferable[tokenId]==1,"the token is not transferable")
+        _beforeTokenTransfer(from, to, tokenId);
+        
+        // Clear approvals from the previous owner
+        _approve(address(0), tokenId);
+
+        _balances[from] -= 1;
+        _balances[to] += 1;
+        _owners[tokenId] = to;
+
+        emit Transfer(from, to, tokenId);
+    }
+
+ //根据NFT constract改，如果_burn[tokenId]不为true，则报错
+function _burn(uint256 tokenId) internal virtual {
+        require(_burnable[tokenId]==1,"the token is not burnable");
+        address owner = ERC721.ownerOf(tokenId);
+
+        _beforeTokenTransfer(owner, address(0), tokenId);
+
+        // Clear approvals
+        _approve(address(0), tokenId);
+
+        _balances[owner] -= 1;
+        delete _owners[tokenId];
+
+        emit Transfer(owner, address(0), tokenId);
+    }
+
+function _mint(address to, uint256 tokenId) internal virtual {
+        require(to != address(0), "ERC721: mint to the zero address");
+        require(!_exists(tokenId), "ERC721: token already minted");
+        _beforeTokenTransfer(address(0), to, tokenId);
+
+        _balances[to] += 1;
+        _owners[tokenId] = to;
+
+        emit Transfer(address(0), to, tokenId);
+    }
+
+}
+
+
